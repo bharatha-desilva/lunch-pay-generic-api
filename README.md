@@ -15,7 +15,7 @@ A generic FastAPI + MongoDB REST API with authentication and dynamic CRUD operat
 ### Authentication Endpoints
 
 - **POST** `/auth/register` - Register a new user with name, email, and password
-- **POST** `/auth/login` - User login with name/password
+- **POST** `/auth/login` - User login with email/password
 - **POST** `/auth/logout` - User logout
 - **GET** `/auth/profile` - Get current user profile
 - **GET** `/auth/validate` - Validate authentication token
@@ -133,7 +133,7 @@ For authentication, create a `users` collection with documents like:
    ```bash
    curl -X POST "http://localhost:8000/auth/login" \
         -H "Content-Type: application/json" \
-        -d '{"name": "testuser", "password": "testpassword"}'
+        -d '{"email": "user@example.com", "password": "testpassword"}'
    ```
 
 3. **Get Profile (requires authentication):**

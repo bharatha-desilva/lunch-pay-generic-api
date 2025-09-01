@@ -221,17 +221,17 @@ async def login(request: Request, response: Response):
     """Login endpoint"""
     try:
         body = await request.json()
-        name = body.get("name")
+        email = body.get("email")
         password = body.get("password")
         
-        if not name or not password:
+        if not email or not password:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Name and password required"
+                detail="Email and password required"
             )
         
         users_collection = db["users"]
-        user = users_collection.find_one({"name": name})
+        user = users_collection.find_one({"email": email})
         
         if not user:
             raise HTTPException(
