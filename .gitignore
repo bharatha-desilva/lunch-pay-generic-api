@@ -155,15 +155,13 @@ cython_debug/
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
 #  be added to the global gitignore or merged into this project gitignore.  For a PyCharm
-#  project, it is recommended to uncomment the following lines and commit the changes to
-#  the repository.
-#.idea/
-*.idea/
+#  project, it is also recommended to ignore the .idea/ directory.
+.idea/
 
 # VS Code
 .vscode/
 
-# Operating System
+# OS generated files
 .DS_Store
 .DS_Store?
 ._*
@@ -175,3 +173,39 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+logs/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Node modules (if using any Node.js tools)
+node_modules/
+
+# Python virtual environments
+venv/
+env/
+.venv/
+.env/
+
+# IDE specific files
+.vscode/
+.idea/
+*.sublime-*
+
+# Backup files
+*.bak
+*.backup
+
+# Custom environment files
+.env.local
+.env.development
+.env.test
+.env.production

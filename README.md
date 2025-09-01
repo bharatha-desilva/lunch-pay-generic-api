@@ -1,169 +1,205 @@
-# Generic MongoDB API
+# Lunch Pay Generic API
 
-A dynamic FastAPI REST API with MongoDB integration that can handle any entity/collection dynamically without predefined models.
+A generic FastAPI + MongoDB REST API with authentication and dynamic CRUD operations.
 
 ## Features
 
-- **Dynamic Entity Support**: Work with any collection/entity name via URL parameters
-- **MongoDB Integration**: Full CRUD operations with MongoDB Atlas
-- **No Schema Validation**: Accept and store any JSON object as-is
-- **Auto Type Conversion**: Smart query parameter conversion for filtering
-- **CORS Enabled**: Cross-origin requests supported
-- **ObjectId Serialization**: Automatic conversion of MongoDB ObjectId to string
+- **Authentication System**: JWT-based authentication with login, logout, profile, and token validation endpoints
+- **Dynamic CRUD Operations**: Generic endpoints that work with any MongoDB collection
+- **MongoDB Integration**: Connected to MongoDB Atlas with automatic document serialization
+- **CORS Support**: Configured for cross-origin requests
+- **Type Conversion**: Automatic query parameter type conversion for filtering
 
 ## API Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/{entity}` | Fetch all documents from the specified collection |
-| GET | `/{entity}/id/{item_id}` | Fetch a single document by ObjectId |
-| POST | `/{entity}` | Save a new JSON object |
-| PUT | `/{entity}/{item_id}` | Update an existing document |
-| GET | `/{entity}/filter` | Fetch documents with dynamic filtering |
-| DELETE | `/{entity}/{item_id}` | Delete a document by ObjectId |
+### Authentication Endpoints
 
-## Quick Start
+- **POST** `/auth/login` - User login with username/password
+- **POST** `/auth/logout` - User logout
+- **GET** `/auth/profile` - Get current user profile
+- **GET** `/auth/validate` - Validate authentication token
+
+### Dynamic CRUD Endpoints
+
+- **GET** `/{entity}` - Get all documents from a collection
+- **GET** `/{entity}/id/{item_id}` - Get a single document by ID
+- **POST** `/{entity}` - Save a new document
+- **PUT** `/{entity}/{item_id}` - Update an existing document
+- **DELETE** `/{entity}/{item_id}` - Delete a document by ID
+- **GET** `/{entity}/filter` - Get filtered documents using query parameters
+
+## Installation & Setup
 
 ### Local Development
 
-1. **Clone the repository**
+1. **Clone the repository:**
    ```bash
    git clone https://github.com/bharatha-desilva/lunch-pay-generic-api.git
    cd lunch-pay-generic-api
    ```
 
-2. **Install dependencies**
+2. **Create and activate a virtual environment:**
+   ```bash
+   python -m venv venv
+   # On Windows
+   venv\Scripts\activate
+   # On macOS/Linux
+   source venv/bin/activate
+   ```
+
+3. **Install dependencies:**
    ```bash
    pip install -r requirements.txt
    ```
 
-3. **Run the application**
+4. **Run the application:**
    ```bash
    python main.py
    ```
-   Or using uvicorn directly:
+
+   Or with uvicorn directly:
    ```bash
-   uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+   uvicorn main:app --reload --host 0.0.0.0 --port 8000
    ```
 
-4. **Access the API**
-   - API: http://localhost:8000
-   - Interactive Docs: http://localhost:8000/docs
-   - OpenAPI Schema: http://localhost:8000/redoc
+5. **Access the API:**
+   - API Base URL: `http://localhost:8000`
+   - Interactive API Documentation: `http://localhost:8000/docs`
+   - Alternative API Documentation: `http://localhost:8000/redoc`
 
-### GitHub Deployment
+### Deployment on Render
 
-1. **Push to GitHub**
+1. **Push your code to GitHub:**
    ```bash
-   git init
-   git remote add origin https://github.com/bharatha-desilva/lunch-pay-generic-api.git
    git add .
    git commit -m "Initial commit"
-   git branch -M main
-   git push -u origin main
+   git push origin main
    ```
 
-### Render Deployment
-
-1. **Connect Repository**
+2. **Deploy on Render:**
    - Go to [Render](https://render.com)
-   - Create a new Web Service
-   - Connect your GitHub repository
+   - Connect your GitHub account
+   - Select "New Web Service"
+   - Choose your repository: `lunch-pay-generic-api`
+   - Configure the service:
+     - **Environment:** Python 3
+     - **Build Command:** `pip install -r requirements.txt`
+     - **Start Command:** `python main.py`
+     - **Port:** Will be automatically set by Render
 
-2. **Configuration**
-   - **Build Command**: `pip install -r requirements.txt`
-   - **Start Command**: `python main.py`
-   - **Environment**: Python 3
+3. **Environment Variables (if needed):**
+   - The MongoDB URI is currently hardcoded in the application
+   - For production, consider setting `MONGODB_URI` as an environment variable
 
-3. **Environment Variables** (if needed)
-   - `PORT`: Automatically set by Render
-   - MongoDB URI is already configured in the code
+## Database Configuration
 
-## API Usage Examples
+The API connects to MongoDB Atlas with the following configuration:
+- **Database:** `fastapi_mongo_api`
+- **Connection:** MongoDB Atlas cluster
 
-### Create a new user
-```bash
-curl -X POST "https://your-app.onrender.com/users" \
-  -H "Content-Type: application/json" \
-  -d '{"name": "John Doe", "email": "john@example.com", "age": 30}'
-```
+### Users Collection
 
-### Get all users
-```bash
-curl "https://your-app.onrender.com/users"
-```
-
-### Get user by ID
-```bash
-curl "https://your-app.onrender.com/users/id/64a7b8c9d12345e678901234"
-```
-
-### Update user
-```bash
-curl -X PUT "https://your-app.onrender.com/users/64a7b8c9d12345e678901234" \
-  -H "Content-Type: application/json" \
-  -d '{"age": 31}'
-```
-
-### Filter users
-```bash
-curl "https://your-app.onrender.com/users/filter?age=30&name=John"
-```
-
-### Delete user
-```bash
-curl -X DELETE "https://your-app.onrender.com/users/64a7b8c9d12345e678901234"
-```
-
-## Dynamic Filtering
-
-The `/filter` endpoint supports dynamic query parameters:
-
-- **Boolean conversion**: `"true"` and `"false"` → boolean values
-- **Number conversion**: Automatic int/float conversion
-- **String handling**: Everything else remains as string
-- **Special handling**: `_id` field is kept as string to avoid ObjectId errors
-
-Example:
-```
-GET /products/filter?price=100&inStock=true&category=electronics
-```
-
-## Response Format
-
-All endpoints return data in a consistent format:
-
+For authentication, create a `users` collection with documents like:
 ```json
 {
-  "data": { ... },           // Single document or array of documents
-  "message": "...",          // Success message (for write operations)
-  "count": 10,               // Number of documents (for list/filter operations)
-  "filters": { ... }         // Applied filters (for filter operations)
+  "_id": "ObjectId",
+  "email": "user@example.com",
+  "username": "testuser",
+  "password": "testpassword",
+  "role": "user",
+  "created_at": "2024-01-01T00:00:00.000Z",
+  "updated_at": "2024-01-01T00:00:00.000Z",
+  "last_login": "2024-01-01T00:00:00.000Z",
+  "is_active": true,
+  "email_verified": false
 }
 ```
 
-## MongoDB Configuration
+**Note:** Currently, passwords are stored in plain text as per project requirements. In production, implement proper password hashing.
 
-The API connects to MongoDB Atlas with the following configuration:
-- **Database**: `fastapi_mongo_api`
-- **Connection**: MongoDB Atlas cluster
-- **Collections**: Dynamic based on entity parameter
+## Usage Examples
 
-## Error Handling
+### Authentication
 
-- **400**: Invalid ObjectId format
-- **404**: Document not found
-- **500**: Server errors with detailed messages
+1. **Login:**
+   ```bash
+   curl -X POST "http://localhost:8000/auth/login" \
+        -H "Content-Type: application/json" \
+        -d '{"username": "testuser", "password": "testpassword"}'
+   ```
+
+2. **Get Profile (requires authentication):**
+   ```bash
+   curl -X GET "http://localhost:8000/auth/profile" \
+        -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+   ```
+
+### Dynamic CRUD Operations
+
+1. **Create a new product:**
+   ```bash
+   curl -X POST "http://localhost:8000/products" \
+        -H "Content-Type: application/json" \
+        -d '{"name": "Laptop", "price": 999.99, "category": "Electronics"}'
+   ```
+
+2. **Get all products:**
+   ```bash
+   curl -X GET "http://localhost:8000/products"
+   ```
+
+3. **Filter products by category:**
+   ```bash
+   curl -X GET "http://localhost:8000/products/filter?category=Electronics"
+   ```
+
+4. **Update a product:**
+   ```bash
+   curl -X PUT "http://localhost:8000/products/PRODUCT_ID" \
+        -H "Content-Type: application/json" \
+        -d '{"price": 899.99}'
+   ```
+
+5. **Delete a product:**
+   ```bash
+   curl -X DELETE "http://localhost:8000/products/PRODUCT_ID"
+   ```
+
+## Query Parameter Filtering
+
+The `/filter` endpoint automatically converts query parameters:
+- `"true"` / `"false"` → boolean
+- Numbers → int or float
+- Everything else → string
+- `_id` is treated as string to avoid ObjectId conversion errors
+
+Example:
+```bash
+# Filter by multiple criteria
+curl "http://localhost:8000/products/filter?price=999&active=true&category=Electronics"
+```
+
+## Security Notes
+
+- **JWT Secret:** Change the `SECRET_KEY` in production
+- **HTTPS:** Enable HTTPS in production and update cookie settings
+- **Password Hashing:** Implement proper password hashing (currently plain text)
+- **Environment Variables:** Use environment variables for sensitive configuration
+- **Rate Limiting:** Consider implementing rate limiting for production use
 
 ## Development
 
 ### Project Structure
 ```
 lunch-pay-generic-api/
-├── main.py              # FastAPI application
+├── main.py              # Main FastAPI application
 ├── requirements.txt     # Python dependencies
 ├── README.md           # This file
-└── .gitignore          # Git ignore rules
+├── .gitignore          # Git ignore rules
+└── .cursor/            # Cursor AI configuration
+    └── rules/
+        ├── auth-guidelines.mdc
+        └── api-guidelines.mdc
 ```
 
 ### Contributing
@@ -171,7 +207,7 @@ lunch-pay-generic-api/
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Test thoroughly
+4. Test the changes
 5. Submit a pull request
 
 ## License
