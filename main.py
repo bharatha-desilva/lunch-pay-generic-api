@@ -143,22 +143,95 @@ def convert_query_value(value: str):
 
 # Authentication Endpoints
 
+@app.post("/auth/register")
+async def register(request: Request):
+    """Register endpoint"""
+    try:
+        body = await request.json()
+        name = body.get("name")
+        email = body.get("email")
+        password = body.get("password")
+        
+        if not name or not email or not password:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Name, email and password required"
+            )
+        
+        users_collection = db["users"]
+        
+        # Check if user already exists
+        existing_user = users_collection.find_one({
+            "$or": [{"name": name}, {"email": email}]
+        })
+        
+        if existing_user:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="User with this name or email already exists"
+            )
+        
+        # Create new user
+        new_user = {
+            "name": name,
+            "email": email,
+            "password": password,  # Plain text as per guidelines
+            "role": "user",
+            "created_at": datetime.utcnow(),
+            "updated_at": datetime.utcnow(),
+            "last_login": None,
+            "is_active": True,
+            "email_verified": False
+        }
+        
+        result = users_collection.insert_one(new_user)
+        
+        # Fetch the created user
+        created_user = users_collection.find_one({"_id": result.inserted_id})
+        user_data = serialize_doc(created_user)
+        user_data.pop("password", None)  # Remove password from response
+        
+        return {
+            "success": True,
+            "message": "User registered successfully",
+            "data": {
+                "user": {
+                    "id": user_data["_id"],
+                    "email": user_data.get("email"),
+                    "name": user_data.get("name"),
+                    "role": user_data.get("role", "user"),
+                    "created_at": user_data.get("created_at"),
+                    "is_active": user_data.get("is_active"),
+                    "email_verified": user_data.get("email_verified")
+                }
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Registration error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error"
+        )
+
 @app.post("/auth/login")
 async def login(request: Request, response: Response):
     """Login endpoint"""
     try:
         body = await request.json()
-        username = body.get("username")
+        name = body.get("name")
         password = body.get("password")
         
-        if not username or not password:
+        if not name or not password:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Username and password required"
+                detail="Name and password required"
             )
         
         users_collection = db["users"]
-        user = users_collection.find_one({"username": username})
+        user = users_collection.find_one({"name": name})
         
         if not user:
             raise HTTPException(
@@ -209,7 +282,7 @@ async def login(request: Request, response: Response):
                 "user": {
                     "id": user_data["_id"],
                     "email": user_data.get("email"),
-                    "username": user_data.get("username"),
+                    "name": user_data.get("name"),
                     "role": user_data.get("role", "user")
                 },
                 "tokens": {
@@ -250,7 +323,7 @@ async def get_profile(current_user: dict = Depends(get_current_user)):
             "user": {
                 "id": user_data["_id"],
                 "email": user_data.get("email"),
-                "username": user_data.get("username"),
+                "name": user_data.get("name"),
                 "role": user_data.get("role", "user"),
                 "created_at": user_data.get("created_at"),
                 "updated_at": user_data.get("updated_at"),
@@ -455,6 +528,7 @@ async def root():
         "version": "1.0.0",
         "endpoints": {
             "auth": {
+                "register": "POST /auth/register",
                 "login": "POST /auth/login",
                 "logout": "POST /auth/logout",
                 "profile": "GET /auth/profile",

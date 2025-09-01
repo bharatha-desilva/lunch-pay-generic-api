@@ -14,7 +14,8 @@ A generic FastAPI + MongoDB REST API with authentication and dynamic CRUD operat
 
 ### Authentication Endpoints
 
-- **POST** `/auth/login` - User login with username/password
+- **POST** `/auth/register` - Register a new user with name, email, and password
+- **POST** `/auth/login` - User login with name/password
 - **POST** `/auth/logout` - User logout
 - **GET** `/auth/profile` - Get current user profile
 - **GET** `/auth/validate` - Validate authentication token
@@ -104,7 +105,7 @@ For authentication, create a `users` collection with documents like:
 {
   "_id": "ObjectId",
   "email": "user@example.com",
-  "username": "testuser",
+  "name": "testuser",
   "password": "testpassword",
   "role": "user",
   "created_at": "2024-01-01T00:00:00.000Z",
@@ -121,14 +122,21 @@ For authentication, create a `users` collection with documents like:
 
 ### Authentication
 
-1. **Login:**
+1. **Register:**
+   ```bash
+   curl -X POST "http://localhost:8000/auth/register" \
+        -H "Content-Type: application/json" \
+        -d '{"name": "testuser", "email": "user@example.com", "password": "testpassword"}'
+   ```
+
+2. **Login:**
    ```bash
    curl -X POST "http://localhost:8000/auth/login" \
         -H "Content-Type: application/json" \
-        -d '{"username": "testuser", "password": "testpassword"}'
+        -d '{"name": "testuser", "password": "testpassword"}'
    ```
 
-2. **Get Profile (requires authentication):**
+3. **Get Profile (requires authentication):**
    ```bash
    curl -X GET "http://localhost:8000/auth/profile" \
         -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
