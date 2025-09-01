@@ -362,7 +362,7 @@ async def get_all_documents(entity: str):
             detail="Error fetching documents"
         )
 
-@app.get("/{entity}/id/{item_id}")
+@app.get("/{entity}/{item_id}")
 async def get_document_by_id(entity: str, item_id: str):
     """Get a single document by ID"""
     try:
@@ -536,7 +536,7 @@ async def root():
             },
             "crud": {
                 "get_all": "GET /{entity}",
-                "get_by_id": "GET /{entity}/id/{item_id}",
+                "get_by_id": "GET /{entity}/{item_id}",
                 "save_new": "POST /{entity}",
                 "update": "PUT /{entity}/{item_id}",
                 "delete": "DELETE /{entity}/{item_id}",
